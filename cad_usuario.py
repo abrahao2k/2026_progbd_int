@@ -1,5 +1,13 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 
+from PyQt5.QtWidgets import QMessageBox    # para criar janela diálogo
+
+### CONEXÃO B.D. ##################
+import mariadb
+conexao = mariadb.connect(host="localhost", user="root",
+                          password="", database="sistematop")
+cursor = conexao.cursor()
+###################################
 
 class Ui_CadastroUsuario(object):
     def setupUi(self, CadastroUsuario):
@@ -24,6 +32,10 @@ class Ui_CadastroUsuario(object):
         self.gridLayout.addWidget(self.lineEdit_senha, 1, 1, 1, 1)
         self.pushButton_salvar = QtWidgets.QPushButton(self.centralwidget)
         self.pushButton_salvar.setObjectName("pushButton_salvar")
+        
+        ### liga o botão com a função ####################################
+        self.pushButton_salvar.clicked.connect(self.cadastrar)
+        
         self.gridLayout.addWidget(self.pushButton_salvar, 2, 1, 1, 1)
         CadastroUsuario.setCentralWidget(self.centralwidget)
 
@@ -36,6 +48,29 @@ class Ui_CadastroUsuario(object):
         self.label_usuario.setText(_translate("CadastroUsuario", "Usuário:"))
         self.label_senha.setText(_translate("CadastroUsuario", "Senha:"))
         self.pushButton_salvar.setText(_translate("CadastroUsuario", "SALVAR"))
+
+
+    def cadastrar(self):
+        usu = self.lineEdit_usuario.text()  # captura a digitação
+        sen = self.lineEdit_senha.text()    # captura a digitação
+        
+        sql=f'''INSERT INTO usuarios VALUES
+                (null, '{usu}', MD5('{sen}') ); '''
+        
+        cursor.execute(sql)
+        conexao.commit()
+        
+        msg = QMessageBox()   # cria dialogo vazio
+        msg.setText("Gravado com sucesso.") # define o texto
+        msg.setWindowTitle("Aviso") # titulo da janela
+        msg.setIcon(QMessageBox.Information)  # icone
+                    # Question, Critical, Warning
+        msg.exec_() # exibe
+        
+        self.lineEdit_usuario.setText("")  # limpar
+        self.lineEdit_senha.setText("")
+        
+        
 
 
 if __name__ == "__main__":
